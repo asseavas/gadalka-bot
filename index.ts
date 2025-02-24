@@ -6,23 +6,23 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const WEBHOOK_URL = `${process.env.WEBHOOK_DOMAIN}/webhook`;
 
-app.get('/', (req, res) => {
-  res.send('🤖 Bot is running and working!');
+app.use(express.json());
+
+app.post('/webhook', async (req, res) => {
+  try {
+    await bot.handleUpdate(req.body);
+    res.sendStatus(200);
+  } catch (error) {
+    console.error('❌ Error handling webhook update:', error);
+    res.sendStatus(500);
+  }
 });
 
-bot
-  .launch()
-  .then(() => {
-    console.log('🤖 Bot has started successfully!');
-  })
-  .catch((err: unknown) => {
-    if (err instanceof Error) {
-      console.error('❌ Error starting the bot:', err.message);
-    } else {
-      console.error('❌ Unknown error while starting the bot:', JSON.stringify(err));
-    }
-  });
+bot.telegram.setWebhook(WEBHOOK_URL).then(() => {
+  console.log(`✅ Webhook has been set: ${WEBHOOK_URL}`);
+});
 
 app.listen(PORT, () => {
   console.log(`🚀 Server is running on port ${PORT}`);

@@ -4,6 +4,7 @@ import { tarotCards } from './data/tarot';
 import { Card } from './types';
 import stringSimilarity from 'string-similarity';
 import { escapeMarkdown } from './utils/escapeMarkdown';
+import { getRandomCard } from './utils/getRandomCards';
 
 dotenv.config();
 
@@ -24,18 +25,16 @@ bot.help((ctx) => {
 });
 
 bot.command('card_of_the_day', (ctx) => {
-  const randomCard = tarotCards[Math.floor(Math.random() * tarotCards.length)];
-  const isUpright = Math.random() > 0.5;
+  const { card, isUpright } = getRandomCard();
   const position = isUpright ? 'прямое положение' : 'перевёрнутое положение';
-  const meaning = isUpright ? randomCard.meaning_upright : randomCard.meaning_reversed;
+  const meaning = isUpright ? card.meaning_upright : card.meaning_reversed;
 
-  const message =
-    `🎴 Карта дня: *${escapeMarkdown(randomCard.name)}* \\(${escapeMarkdown(position)}\\)\n\n` +
-    `📜 *Описание:* ${escapeMarkdown(randomCard.description)}\n\n` +
-    `🔮 *Значение:* ${escapeMarkdown(meaning)}\n\n` +
-    `✨ *Совет:* ${escapeMarkdown(randomCard.advice)}`;
-
-  ctx.replyWithMarkdownV2(message);
+  ctx.replyWithMarkdownV2(
+    `🎴 Карта дня: *${escapeMarkdown(card.name)}* \\(${escapeMarkdown(position)}\\)\n\n` +
+      `📜 *Описание:* ${escapeMarkdown(card.description)}\n\n` +
+      `🔮 *Значение:* ${escapeMarkdown(meaning)}\n\n` +
+      `✨ *Совет:* ${escapeMarkdown(card.advice)}`
+  );
 });
 
 bot.command('yesno', (ctx) => {
@@ -50,67 +49,56 @@ bot.command('yesno', (ctx) => {
 });
 
 bot.command('future', (ctx) => {
-  const selectedCards: Card[] = [];
+  const selectedCards = new Set<Card>();
 
-  while (selectedCards.length < 3) {
-    const randomCard = tarotCards[Math.floor(Math.random() * tarotCards.length)];
-
-    if (!selectedCards.includes(randomCard)) {
-      selectedCards.push(randomCard);
-    }
+  while (selectedCards.size < 3) {
+    selectedCards.add(getRandomCard().card);
   }
 
-  let message = '🔮 *Расклад на будущее:*\n\n';
+  const message = Array.from(selectedCards)
+    .map((card, index) => {
+      const { isUpright } = getRandomCard();
+      const position = isUpright ? 'прямое положение' : 'перевёрнутое положение';
+      const meaning = isUpright ? card.meaning_upright : card.meaning_reversed;
 
-  selectedCards.forEach((card, index) => {
-    const isUpright = Math.random() > 0.5;
-    const position = isUpright ? 'прямое положение' : 'перевёрнутое положение';
-    const meaning = isUpright ? card.meaning_upright : card.meaning_reversed;
+      return (
+        `🎴 *Карта ${index + 1}:* ${escapeMarkdown(card.name)} \\(${escapeMarkdown(position)}\\)\n` +
+        `📜 *Значение:* ${escapeMarkdown(meaning)}\n` +
+        `💡 *Совет:* ${escapeMarkdown(card.advice)}\n` +
+        `⚠️ *Предупреждение:* ${escapeMarkdown(card.warning)}\n\n`
+      );
+    })
+    .join('');
 
-    message +=
-      `🎴 *Карта ${index + 1}:* ${escapeMarkdown(card.name)} \\(${escapeMarkdown(position)}\\)\n` +
-      `📜 *Значение:* ${escapeMarkdown(meaning)}\n` +
-      `💡 *Совет:* ${escapeMarkdown(card.advice)}\n` +
-      `⚠️ *Предупреждение:* ${escapeMarkdown(card.warning)}\n\n`;
-  });
-
-  ctx.replyWithMarkdownV2(message);
+  ctx.replyWithMarkdownV2(`🔮 *Расклад на будущее:*\n\n${message}`);
 });
 
 bot.command('card', (ctx) => {
   const cardName = ctx.message.text.split(' ').slice(1).join(' ').trim();
 
-  if (!cardName) {
-    return ctx.reply('Пожалуйста, укажи название карты после команды /card.');
-  }
+  if (!cardName) return ctx.reply('Пожалуйста, укажи название карты после команды /card.');
 
   const foundCard = tarotCards.find((c) => c.name.toLowerCase() === cardName.toLowerCase());
 
-  if (!foundCard) {
-    const matches = stringSimilarity.findBestMatch(
-      cardName,
-      tarotCards.map((c) => c.name)
+  if (foundCard) {
+    return ctx.replyWithMarkdownV2(
+      `🎴 *Карта:* ${escapeMarkdown(foundCard.name)}\n\n` +
+        `📜 *Описание:* ${escapeMarkdown(foundCard.description)}\n\n` +
+        `💫 *Аффирмация:* ${escapeMarkdown(foundCard.affirmation)}`
     );
-
-    const suggestions = matches.ratings
-      .filter((r) => r.rating > 0.5)
-      .slice(0, 3)
-      .map((r) => `- ${r.target}`)
-      .join('\n');
-
-    const errorMessage =
-      `Карта "${escapeMarkdown(cardName)}" не найдена\\.\n\n` +
-      (suggestions ? `Возможно, ты имел в виду:\n${escapeMarkdown(suggestions)}` : 'Попробуй ещё раз\\.');
-
-    return ctx.replyWithMarkdownV2(errorMessage);
   }
 
-  const message =
-    `🎴 *Карта:* ${escapeMarkdown(foundCard.name)}\n\n` +
-    `📜 *Описание:* ${escapeMarkdown(foundCard.description)}\n\n` +
-    `💫 *Аффирмация:* ${escapeMarkdown(foundCard.affirmation)}`;
+  const bestMatch = stringSimilarity.findBestMatch(
+    cardName,
+    tarotCards.map((c) => c.name)
+  ).bestMatch;
 
-  ctx.replyWithMarkdownV2(message);
+  return ctx.replyWithMarkdownV2(
+    `Карта "${escapeMarkdown(cardName)}" не найдена\\.\n\n` +
+      (bestMatch.rating > 0.6
+        ? `Возможно, ты имел в виду: *${escapeMarkdown(bestMatch.target)}*`
+        : 'Попробуй ещё раз\\.')
+  );
 });
 
 process.once('SIGINT', () => bot.stop('SIGINT'));
