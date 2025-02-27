@@ -1,29 +1,16 @@
 import { Telegraf } from 'telegraf';
-import { message } from 'telegraf/filters';
-import { getYesNoResponse } from '../utils/getYesNoResponse';
-
-const waitingForQuestion = new Map<number, boolean>();
+import { waitingForResponse } from '../bot';
+import { handleYesno } from '../utils/handleYesno';
 
 export const yesnoCommand = (bot: Telegraf) => {
   bot.command('yesno', (ctx) => {
-    const question = ctx.message.text.split(' ').slice(1).join(' ');
+    const question = ctx.message.text.split(' ').slice(1).join(' ').trim();
 
     if (question) {
-      return ctx.reply(getYesNoResponse(question), { parse_mode: 'Markdown' });
+      return handleYesno(ctx, question);
     } else {
-      waitingForQuestion.set(ctx.message.from.id, true);
-      return ctx.reply('🔮 Задай мне вопрос, и я дам ответ "да" или "нет".', { parse_mode: 'Markdown' });
-    }
-  });
-
-  bot.on(message('text'), (ctx) => {
-    const userId = ctx.message.from.id;
-
-    if (waitingForQuestion.has(userId)) {
-      const question = ctx.message.text;
-      ctx.reply(getYesNoResponse(question), { parse_mode: 'Markdown' });
-
-      waitingForQuestion.delete(userId);
+      waitingForResponse.set(ctx.message.from.id, 'yesno');
+      return ctx.reply('🔮 Задай мне вопрос, и я дам ответ "да" или "нет".');
     }
   });
 };
