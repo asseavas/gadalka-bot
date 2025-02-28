@@ -12,6 +12,7 @@ import { namesCommand } from './commands/names';
 import { handleYesno } from './utils/handleYesno';
 import { handleCard } from './utils/handleCard';
 import { handleNames } from './utils/handleNames';
+import { handleDates } from './utils/handleDates';
 import { datesCommand } from './commands/dates';
 
 dotenv.config();
@@ -49,6 +50,9 @@ bot.on(message('text'), async (ctx) => {
       break;
     case 'names':
       await handleNames(ctx, userMessage);
+      break;
+    case 'dates':
+      await handleDates(ctx, userMessage);
       break;
     default:
       await ctx.reply('Что-то пошло не так, попробуй снова.');
