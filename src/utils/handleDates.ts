@@ -40,11 +40,11 @@ export const handleDates = (ctx: Context, messageWithDates: string) => {
       `📅 *Первая дата:* ${dates[0]}\n` +
       `📅 *Вторая дата:* ${dates[1]}\n\n` +
       `✨ *Матрица совместимости:*\n\n` +
-      `👩‍❤️‍👨 *Пара в глазах окружающих*:\n ${visitingCard1?.visitingCard}\n\n` +
-      `⚡️ *Вдохновение для пары:*\n ${talents1?.talents}\n\n` +
-      `💸 *Уязвимые зоны в финансах пары:*\n ${soulMission1?.soulMission}\n\n` +
-      `🔥 *Испытания для отношений*:\n ${karmicTail1?.karmicTail}\n\n` +
-      `💘 *Общая характеристика:*\n ${comfortZone1?.comfortZone}`,
+      `👩‍❤️‍👨 *Пара в глазах окружающих:* ${visitingCard1?.number} Аркан\n ${visitingCard1?.visitingCard}\n\n` +
+      `⚡️ *Вдохновение для пары:*  ${talents1?.number} Аркан\n ${talents1?.talents}\n\n` +
+      `💸 *Уязвимые зоны в финансах пары:* ${soulMission1?.number} Аркан\n ${soulMission1?.soulMission}\n\n` +
+      `🔥 *Испытания для отношений:* ${karmicTail1?.number} Аркан\n ${karmicTail1?.karmicTail}\n\n` +
+      `💘 *Общая характеристика:* ${comfortZone1?.number} Аркан\n ${comfortZone1?.comfortZone}`,
     { parse_mode: 'Markdown' }
   );
 };
