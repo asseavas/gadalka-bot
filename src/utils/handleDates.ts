@@ -2,7 +2,8 @@ import { Context } from 'telegraf';
 import { parseDate } from './parseDate';
 import { calculateMatrix } from './calculateMatrix';
 import { calculateCompatibility } from './calculateCompatibility';
-import { DateParts } from '../types';
+import { DateParts, MatrixArcana } from '../types';
+import { matrixOfDestiny } from '../data/matrix';
 
 export const handleDates = (ctx: Context, messageWithDates: string) => {
   const dates = messageWithDates.split(/\s+[и\/]\s+/);
@@ -28,16 +29,26 @@ export const handleDates = (ctx: Context, messageWithDates: string) => {
   const matrix2 = calculateMatrix(date2);
   const compatibilityMatrix = calculateCompatibility(matrix1, matrix2);
 
+  const visitingCard1 = getArcana(compatibilityMatrix.visitingCard);
+  const talents1 = getArcana(compatibilityMatrix.talents);
+  const soulMission1 = getArcana(compatibilityMatrix.soulMission);
+  const karmicTail1 = getArcana(compatibilityMatrix.karmicTail);
+  const comfortZone1 = getArcana(compatibilityMatrix.comfortZone);
+
   return ctx.reply(
     `🔮 Совместимость по датам:\n\n` +
       `📅 *Первая дата:* ${dates[0]}\n` +
       `📅 *Вторая дата:* ${dates[1]}\n\n` +
       `✨ *Матрица совместимости:*\n` +
-      `Пара в глазах окружающих: ${compatibilityMatrix.visitingCard}\n` +
-      `Вдохновение для пары: ${compatibilityMatrix.talents}\n` +
-      `Финансовая карма: ${compatibilityMatrix.soulMission}\n` +
-      `Любовная карма: ${compatibilityMatrix.karmicTail}\n` +
-      `Общая характеристика: ${compatibilityMatrix.comfortZone}`,
+      `Пара в глазах окружающих:\n ${visitingCard1?.visitingCard}\n` +
+      `Вдохновение для пары:\n ${talents1?.talents}\n` +
+      `Уязвимые зоны в финансах пары:\n ${soulMission1?.soulMission}\n` +
+      `Испытания для отношений:\n ${karmicTail1?.karmicTail}\n` +
+      `Общая характеристика:\n ${comfortZone1?.comfortZone}`,
     { parse_mode: 'Markdown' }
   );
+};
+
+const getArcana = (number: number): MatrixArcana | undefined => {
+  return matrixOfDestiny.find((arcana) => arcana.number === number);
 };

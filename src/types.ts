@@ -9,6 +9,16 @@ export interface Card {
   affirmation: string;
 }
 
+export interface MatrixArcana {
+  name: string;
+  number: number;
+  visitingCard: string;
+  talents: string;
+  soulMission: string;
+  karmicTail: string;
+  comfortZone: string;
+}
+
 export type DateParts = { day: number; month: number; year: number };
 
 export type Matrix = {

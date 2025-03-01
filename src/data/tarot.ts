@@ -1,4 +1,6 @@
-export const tarotCards = [
+import { Card } from '../types';
+
+export const tarotCards: Card[] = [
   {
     name: 'Шут',
     description:
