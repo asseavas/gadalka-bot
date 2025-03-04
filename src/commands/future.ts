@@ -17,7 +17,7 @@ export const futureCommand = (bot: Telegraf) => {
         const meaning = isUpright ? card.meaning_upright : card.meaning_reversed;
 
         return (
-          `🎴 *Карта ${index + 1}:* ${card.name} (${position})\n` +
+          `🎴 *Карта ${index + 1}:* ${card.name} (${position})\n\n` +
           `📜 *Значение:* ${meaning}\n` +
           `💡 *Совет:* ${card.advice}\n` +
           `⚠️ *Предупреждение:* ${card.warning}\n\n`

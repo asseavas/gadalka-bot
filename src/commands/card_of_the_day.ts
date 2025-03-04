@@ -11,7 +11,8 @@ export const cardOfTheDayCommand = (bot: Telegraf) => {
       `🎴 Карта дня: *${card.name}* (${position})\n\n` +
         `📜 *Описание:* ${card.description}\n\n` +
         `🔮 *Значение:* ${meaning}\n\n` +
-        `✨ *Совет:* ${card.advice}`,
+        `✨ *Совет:* ${card.advice}\n\n` +
+        `⚠️ *Предупреждение:* ${card.warning}`,
       { parse_mode: 'Markdown' }
     );
   });
